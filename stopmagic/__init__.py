@@ -307,38 +307,49 @@ class InitializeHandler(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class KeymeshPanel(bpy.types.Panel):
-    bl_idname = "VIEW3D_PT_keymesh_panel"
-    bl_label = "Keymesh"
-    bl_category = "Keymesh"
+class StopmagicPanel(bpy.types.Panel):
+    bl_idname = "VIEW3D_PT_stopmagic_panel"
+    bl_label = "Stopmagic"
+    bl_category = "Stopmagic"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
 
-    km_skip_count = 3
-
-    def draw(self, context):
+    def draw(self, context: bpy.context):
+        column = self.layout.column()
+        column.label(text=("Version: " + addon_version()))
         column = self.layout.column()
         column.scale_y = 1.5
-        column.label(text="Add Keyframe (Ctrl Shift A)")
+        column.separator()
         column.operator("object.keyframe_mesh", text="Keyframe Mesh")
         self.layout.separator()
-        self.layout.operator("object.purge_keymesh_data", text="Purge Keymesh Data")
-        self.layout.operator(
-            "object.initialize_handler", text="Initialize Frame Handler"
-        )
-
+        column = self.layout.column()
+        column.label(text="Frame Skip Options")
+        column.prop(context.scene, "stopmagic_insert_frame_after_skip")
+        column.prop(context.scene, "stopmagic_frame_skip_count")
         column = self.layout.column()
         column.scale_y = 1.5
-        column.label(text="Skip and Add")
-        row = column.row(align=True)
-        self.layout.operator("object.frame_backward_keyframe_mesh", text="<")
-        try:
-            self.km_skip_count = get_preferences(context).km_skip_count
-        except Exception as e:
-            print("Keymesh fetching skip count", e)
-            self.km_skip_count = 3
-        # self.layout.prop(self, "km_skip_count")
-        self.layout.operator("object.frame_forward_keyframe_mesh", text=">")
+        row = column.row(align=False)
+        row.alignment = "EXPAND"
+        row.operator(
+            "object.frame_backward_keyframe_mesh",
+            text=r"Backward",
+            emboss=True,
+            depress=False,
+            icon_value=6,
+        )
+        row.operator(
+            "object.frame_forward_keyframe_mesh",
+            text=r"Forward",
+            emboss=True,
+            depress=False,
+            icon_value=4,
+        )
+        column.label(text="Use shortcuts for faster & easier workflows")
+        column.separator()
+        column = self.layout.column()
+        column.label(text="Status Options")
+        column.operator("object.purge_unused_data", text="Purge Unused Data")
+        column.operator("object.initialize_handler", text="Initialize Frame Handler")
 
 
 addon_keymaps = []
