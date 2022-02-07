@@ -4,6 +4,8 @@
 
 Stopmagic gives you the power of creating amazing Stop Motion animations faster and easier than ever before. This project is maintained by Aldrin Mathew.
 
+![](./media/panel.png)
+
 This is a revival of the Keymesh addon developed by Pablo Dobarro, and the Animation Testing for Keymesh was done by Daniel Martinez Lara.
 
 ## Features
