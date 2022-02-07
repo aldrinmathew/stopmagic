@@ -351,7 +351,19 @@ def unregister_properties():
     bpy.utils.unregister_class(StopmagicPreferences)
 
 
-        return {"FINISHED"}
+def addon_version():
+    """Gets the string form of the addon version"""
+    result = ""
+    i = 0
+    length = len(bl_info["version"])
+    while i < length:
+        result += str(bl_info["version"][i])
+        if i + 1 != length:
+            result += "."
+        i += 1
+    if "warning" in bl_info:
+        result += " " + bl_info["warning"]
+    return result
 
 
 class StopmagicPanel(bpy.types.Panel):
