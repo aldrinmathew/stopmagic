@@ -319,7 +319,37 @@ class InitializeHandler(bpy.types.Operator):
 
     def execute(self, context):
         bpy.app.handlers.frame_change_post.clear()
-        bpy.app.handlers.frame_change_post.append(updateKeymesh)
+        bpy.app.handlers.frame_change_post.append(updateStopmagic)
+        return {"FINISHED"}
+
+
+def register_properties():
+    bpy.utils.register_class(StopmagicPreferences)
+    bpy.types.Scene.stopmagic_frame_skip_count = bpy.props.IntProperty(
+        name="Frame Count",
+        description="Skip this many frames forwards or backwards",
+        subtype="NONE",
+        options=set(),
+        default=3,
+        min=1,
+        max=2**31 - 1,
+        soft_min=1,
+        soft_max=100,
+        step=1,
+    )
+    bpy.types.Scene.stopmagic_insert_frame_after_skip = bpy.props.BoolProperty(
+        name="Insert Keyframe",
+        description="Whether to insert keyframe after skipping frames",
+        options=set(),
+        default=True,
+    )
+
+
+def unregister_properties():
+    del bpy.types.Scene.stopmagic_frame_skip_count
+    del bpy.types.Scene.stopmagic_insert_frame_after_skip
+    bpy.utils.unregister_class(StopmagicPreferences)
+
 
         return {"FINISHED"}
 
