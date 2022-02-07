@@ -107,11 +107,14 @@ def keymesh_insert_keyframe(object):
     bpy.app.handlers.frame_change_post.append(updateKeymesh)
 
 
-class KeymeshPreferences(bpy.types.AddonPreferences):
+class StopmagicPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    km_skip_count = IntProperty(
-        name="Skip Count",
+    frame_skip_count: bpy.props.IntProperty(
+        name="Frame Count",
+        description="Skip this many frames forwards or backwards",
+        subtype="NONE",
+        options=set(),
         default=3,
         min=1,
         max=2**31 - 1,
@@ -120,6 +123,20 @@ class KeymeshPreferences(bpy.types.AddonPreferences):
         step=1,
         options={"ANIMATABLE"},
     )
+    insert_keyframe_after_skip: bpy.props.BoolProperty(
+        name="Insert Keyframe after Skip",
+        description="Whether to insert keyframe after skipping frames",
+        options=set(),
+        default=True,
+    )
+
+    def draw(self, context):
+        self.layout.label(text="Frame Skip Options")
+        self.layout.prop(self, "insert_keyframe_after_skip")
+        row = self.layout.row()
+        column = row.column()
+        column.prop(self, "frame_skip_count")
+        column = row.column()
 
 
 class SkipFrameForward(bpy.types.Operator):
