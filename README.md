@@ -1,10 +1,7 @@
-# *StopMagic* for Blender
-
+![](./media/panel.png)
 [![](https://img.shields.io/badge/DOWNLOAD-2D8CFF?style=for-the-badge&logoColor=white)](https://github.com/aldrinsartfactory/stopmagic/releases)
 
 Stopmagic gives you the power of creating amazing Stop Motion animations faster and easier than ever before. This project is maintained by Aldrin Mathew.
-
-![](./media/panel.png)
 
 This is a revival of the Keymesh addon developed by Pablo Dobarro, and the Animation Testing for Keymesh was done by Daniel Martinez Lara.
 
