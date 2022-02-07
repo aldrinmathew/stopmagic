@@ -1,84 +1,76 @@
 import bpy
 import re
 from bpy.app.handlers import persistent
-from bpy.props import IntProperty
-
 from os.path import basename, dirname
 
+__package__ = "stopmagic"
+
 bl_info = {
-    "name": "Keymesh Alpha",
-    "author": "Pablo Dobarro (Developer), Daniel Martinez Lara (Animation & Testing), Aldrin Mathew (Improvements)",
+    "name": "Stopmagic",
+    "author": "Aldrin Mathew",
     "version": (0, 2, 0),
     "blender": (2, 91, 0),
-    "location": "Sidebar > KeyMesh",
+    "location": "Sidebar > Stopmagic",
     "warning": "Experimental",
-    "category": "Object",
-    "description": "This addon helps in improving your Stop Motion animation workflow. Use shortcut 'Ctrl Shift A' for faster workflows.",
-    "doc_url": "https://vimeo.com/506765863",
+    "category": "Animation",
+    "description": "Improve your Stop motion workflow. Use shortcuts 'Ctrl Shift X' & 'Ctrl Shift Z' for faster workflows.",
+    "doc_url": "https://github.com/aldrinsartfactory/stopmagic",
 }
 
 
-__package__ = "keymesh"
-
-
-def get_preferences(context):
+def get_preferences(context: bpy.context):
     return context.preferences.addons[__package__].preferences
 
 
-def next_available_keymesh_object_id():
+def next_available_object_id():
     max_id = 0
     for ob in bpy.data.objects:
-        if ob.get("km_id") is None:
+        if ob.get("sm_id") is None:
             continue
-        object_keymesh_id = ob["km_id"]
-        if object_keymesh_id > max_id:
-            max_id = object_keymesh_id
+        object_sm_id = ob["sm_id"]
+        if object_sm_id > max_id:
+            max_id = object_sm_id
     return max_id + 1
 
 
-def object_next_available_keyframe_index(ob):
-    if ob.get("km_id") is None:
+def next_available_stopmagic_frame(ob):
+    if ob.get("sm_id") is None:
         return 0
-
-    object_keymesh_id = ob["km_id"]
-
+    object_sm_id = ob["sm_id"]
     max_index = 0
     object_name_full = ob.name_full
     for mesh in bpy.data.meshes:
-        if mesh.get("km_id") is None:
+        if mesh.get("sm_id") is None:
             continue
-        mesh_km_id = mesh["km_id"]
-        mesh_km_datablock = mesh["km_datablock"]
-
-        if mesh_km_id != object_keymesh_id:
+        mesh_sm_id = mesh["sm_id"]
+        mesh_sm_datablock = mesh["sm_datablock"]
+        if mesh_sm_id != object_sm_id:
             continue
-
-        keyframe_index = mesh_km_datablock
+        keyframe_index = mesh_sm_datablock
         if keyframe_index > max_index:
             max_index = keyframe_index
     return max_index + 1
 
 
-def keymesh_insert_keyframe_ex(object, keymesh_frame_index):
-    if object.get("km_id") is None:
-        object["km_id"] = next_available_keymesh_object_id()
-    object_keymesh_id = object["km_id"]
-
+def insert_mesh_keyframe_ex(object, frame_index):
+    if object.get("sm_id") is None:
+        object["sm_id"] = next_available_object_id()
+    object_sm_id = object["sm_id"]
     new_mesh = bpy.data.meshes.new_from_object(object)
     ob_name_full = object.name_full
-    new_mesh_name = ob_name_full + "_km" + str(keymesh_frame_index)
+    new_mesh_name = ob_name_full + "_sm_" + str(frame_index)
     new_mesh.name = new_mesh_name
-    new_mesh["km_id"] = object_keymesh_id
-    new_mesh["km_datablock"] = keymesh_frame_index
+    new_mesh["sm_id"] = object_sm_id
+    new_mesh["sm_datablock"] = frame_index
     object.data = new_mesh
     object.data.use_fake_user = True
     current_frame = bpy.context.scene.frame_current
-    object["km_datablock"] = keymesh_frame_index
-    object.keyframe_insert(data_path='["km_datablock"]', frame=current_frame)
+    object["sm_datablock"] = frame_index
+    object.keyframe_insert(data_path='["sm_datablock"]', frame=current_frame)
 
 
-def keymesh_insert_keyframe(object):
-    new_keyframe_index = object_next_available_keyframe_index(object)
+def insert_mesh_keyframe(object):
+    new_keyframe_index = next_available_stopmagic_frame(object)
 
     # Gets the data that's not persistent when the Keyframe is added to the mesh
     remesh_voxel_size = object.data.remesh_voxel_size
@@ -87,11 +79,11 @@ def keymesh_insert_keyframe(object):
     symmetry_y = object.data.use_mirror_y
     symmetry_z = object.data.use_mirror_z
 
-    keymesh_insert_keyframe_ex(object, new_keyframe_index)
+    insert_mesh_keyframe_ex(object, new_keyframe_index)
 
     fcurves = object.animation_data.action.fcurves
     for fcurve in fcurves:
-        if fcurve.data_path != '["km_datablock"]':
+        if fcurve.data_path != '["sm_datablock"]':
             continue
         for kf in fcurve.keyframe_points:
             kf.interpolation = "CONSTANT"
@@ -104,7 +96,7 @@ def keymesh_insert_keyframe(object):
     bpy.context.object.data.use_mirror_z = symmetry_z
 
     bpy.app.handlers.frame_change_post.clear()
-    bpy.app.handlers.frame_change_post.append(updateKeymesh)
+    bpy.app.handlers.frame_change_post.append(updateStopmagic)
 
 
 class StopmagicPreferences(bpy.types.AddonPreferences):
@@ -121,7 +113,6 @@ class StopmagicPreferences(bpy.types.AddonPreferences):
         soft_min=1,
         soft_max=100,
         step=1,
-        options={"ANIMATABLE"},
     )
     insert_keyframe_after_skip: bpy.props.BoolProperty(
         name="Insert Keyframe after Skip",
@@ -151,14 +142,16 @@ class SkipFrameForward(bpy.types.Operator):
         return context.active_object is not None
 
     def execute(self, context):
+        count = 3
         try:
-            km_skip_count = get_preferences(context).km_skip_count
+            count = context.scene.stopmagic_frame_skip_count
         except Exception as e:
-            print("Keymesh fetching skip count", e)
-            km_skip_count = 3
+            print("KEYMESH :: Fetching frame skip count :: ", e)
+            count = 3
         ob = context.active_object
-        bpy.context.scene.frame_current += km_skip_count
-        keymesh_insert_keyframe(ob)
+        bpy.context.scene.frame_current += count
+        if context.scene.stopmagic_insert_frame_after_skip:
+            insert_mesh_keyframe(ob)
         return {"FINISHED"}
 
 
@@ -174,18 +167,20 @@ class SkipFrameBackward(bpy.types.Operator):
         return context.active_object is not None
 
     def execute(self, context):
+        count = 3
         try:
-            km_skip_count = get_preferences(context).km_skip_count
+            count = context.scene.stopmagic_frame_skip_count
         except Exception as e:
-            print("Keymesh fetching skip count", e)
-            km_skip_count = 3
+            print("KEYMESH :: Fetching frame skip count :: ", e)
+            count = 3
         ob = context.active_object
-        bpy.context.scene.frame_current -= km_skip_count
-        keymesh_insert_keyframe(ob)
+        bpy.context.scene.frame_current -= count
+        if context.scene.stopmagic_insert_frame_after_skip:
+            insert_mesh_keyframe(ob)
         return {"FINISHED"}
 
 
-class KeyframeMesh(bpy.types.Operator):
+class AddMeshKeyframe(bpy.types.Operator):
     """Adds a Keyframe to the currently selected Mesh, after which you can edit the mesh to keep the changes."""
 
     bl_idname = "object.keyframe_mesh"
@@ -198,33 +193,33 @@ class KeyframeMesh(bpy.types.Operator):
 
     def execute(self, context):
         ob = context.active_object
-        keymesh_insert_keyframe(ob)
+        insert_mesh_keyframe(ob)
         return {"FINISHED"}
 
 
-def updateKeymesh(scene):
+def updateStopmagic(scene):
     for object in scene.objects:
-        if object.get("km_datablock") is None:
+        if object.get("sm_datablock") is None:
             continue
 
-        object_km_id = object["km_id"]
-        object_km_datablock = object["km_datablock"]
+        object_sm_id = object["sm_id"]
+        object_sm_datablock = object["sm_datablock"]
 
         final_mesh = None
         for mesh in bpy.data.meshes:
 
-            # No Keymesh Datablock
-            if mesh.get("km_id") is None:
+            # No stopmagic Datablock
+            if mesh.get("sm_id") is None:
                 continue
-            mesh_km_id = mesh["km_id"]
-            mesh_km_datablock = mesh["km_datablock"]
+            mesh_sm_id = mesh["sm_id"]
+            mesh_sm_datablock = mesh["sm_datablock"]
 
-            # No keymesh datat for this object
-            if mesh_km_id != object_km_id:
+            # No stopmagic data for this object
+            if mesh_sm_id != object_sm_id:
                 continue
 
-            # No keymesh data for this frame
-            if mesh_km_datablock != object_km_datablock:
+            # No stopmagic data for this frame
+            if mesh_sm_datablock != object_sm_datablock:
                 continue
 
             final_mesh = mesh
@@ -235,50 +230,50 @@ def updateKeymesh(scene):
         object.data = final_mesh
 
 
-class PurgeKeymeshData(bpy.types.Operator):
+class PurgeStopmagicData(bpy.types.Operator):
     """Deletes all unushed Mesh data."""
 
-    bl_idname = "object.purge_keymesh_data"
-    bl_label = "Purge Keymesh Data"
+    bl_idname = "object.purge_unused_data"
+    bl_label = "Purge Unused Data"
 
     @classmethod
     def poll(cls, context):
         return True
 
     def execute(self, context):
-        used_km_mesh = {}
+        used_sm_mesh = {}
 
         for ob in bpy.data.objects:
-            if ob.get("km_id") is None:
+            if ob.get("sm_id") is None:
                 continue
 
-            km_id = ob.get("km_id")
-            used_km_mesh[km_id] = []
+            sm_id = ob.get("sm_id")
+            used_sm_mesh[sm_id] = []
 
             fcurves = ob.animation_data.action.fcurves
             for fcurve in fcurves:
-                if fcurve.data_path != '["km_datablock"]':
+                if fcurve.data_path != '["sm_datablock"]':
                     continue
 
                 keyframePoints = fcurve.keyframe_points
                 for keyframe in keyframePoints:
-                    used_km_mesh[km_id].append(keyframe.co.y)
+                    used_sm_mesh[sm_id].append(keyframe.co.y)
 
         delete_mesh = []
 
         for mesh in bpy.data.meshes:
-            if mesh.get("km_id") is None:
+            if mesh.get("sm_id") is None:
                 continue
 
-            mesh_km_id = mesh.get("km_id")
+            mesh_sm_id = mesh.get("sm_id")
 
-            if mesh_km_id not in used_km_mesh:
+            if mesh_sm_id not in used_sm_mesh:
                 delete_mesh.append(mesh)
                 continue
 
-            mesh_km_datablock = mesh.get("km_datablock")
+            mesh_sm_datablock = mesh.get("sm_datablock")
 
-            if mesh_km_datablock not in used_km_mesh[mesh_km_id]:
+            if mesh_sm_datablock not in used_sm_mesh[mesh_sm_id]:
                 delete_mesh.append(mesh)
                 continue
 
@@ -287,7 +282,7 @@ class PurgeKeymeshData(bpy.types.Operator):
             print(mesh.name)
             mesh.use_fake_user = False
 
-        updateKeymesh(bpy.context.scene)
+        updateStopmagic(bpy.context.scene)
 
         for mesh in delete_mesh:
             if mesh.users == 0:
@@ -297,17 +292,17 @@ class PurgeKeymeshData(bpy.types.Operator):
 
 
 @persistent
-def km_frame_handler(dummy):  #
+def sm_frame_handler(dummy):  #
     obs = bpy.context.scene.objects
     for o in obs:
-        if "km_datablock" and "km_id" in o:  # It's a Keymesh scene
+        if "sm_datablock" and "sm_id" in o:  # It's a Stopmagic scene
             bpy.app.handlers.frame_change_post.clear()
-            bpy.app.handlers.frame_change_post.append(updateKeymesh)
+            bpy.app.handlers.frame_change_post.append(updateStopmagic)
             break
 
 
 class InitializeHandler(bpy.types.Operator):
-    """If Keymesh stops working try using this function to re-initialize it's frame handler"""
+    """If Stopmagic stops working try using this function to re-initialize it's frame handler"""
 
     bl_idname = "object.initialize_handler"
     bl_label = "Initialize Handler"
@@ -415,16 +410,17 @@ addon_keymaps = []
 
 
 def register():
-    bpy.utils.register_classes_factory([KeymeshPreferences])
-    bpy.utils.register_class(KeyframeMesh)
+    bpy.utils.register_classes_factory([StopmagicPreferences])
+    register_properties()
+    bpy.utils.register_class(AddMeshKeyframe)
     bpy.utils.register_class(SkipFrameForward)
     bpy.utils.register_class(SkipFrameBackward)
-    bpy.utils.register_class(PurgeKeymeshData)
+    bpy.utils.register_class(PurgeStopmagicData)
     bpy.utils.register_class(InitializeHandler)
-    bpy.utils.register_class(KeymeshPanel)
-    bpy.app.handlers.load_post.append(km_frame_handler)
+    bpy.utils.register_class(StopmagicPanel)
+    bpy.app.handlers.load_post.append(sm_frame_handler)
     bpy.app.handlers.frame_change_post.clear()
-    bpy.app.handlers.frame_change_post.append(updateKeymesh)
+    bpy.app.handlers.frame_change_post.append(updateStopmagic)
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
     if kc:
@@ -433,20 +429,37 @@ def register():
             "object.keyframe_mesh", type="A", value="PRESS", shift=True, ctrl=True
         )
         addon_keymaps.append((keyMapView, keyMapItem))
+        keyMapItem = keyMapView.keymap_items.new(
+            "object.frame_backward_keyframe_mesh",
+            type="Z",
+            value="PRESS",
+            shift=True,
+            ctrl=True,
+        )
+        addon_keymaps.append((keyMapView, keyMapItem))
+        keyMapItem = keyMapView.keymap_items.new(
+            "object.frame_forward_keyframe_mesh",
+            type="X",
+            value="PRESS",
+            shift=True,
+            ctrl=True,
+        )
+        addon_keymaps.append((keyMapView, keyMapItem))
 
 
 def unregister():
-    bpy.utils.register_classes_factory([KeymeshPreferences])
-    bpy.utils.unregister_class(KeyframeMesh)
+    bpy.utils.register_classes_factory([StopmagicPreferences])
+    unregister_properties()
+    bpy.utils.unregister_class(AddMeshKeyframe)
     bpy.utils.unregister_class(SkipFrameForward)
     bpy.utils.unregister_class(SkipFrameBackward)
-    bpy.utils.unregister_class(PurgeKeymeshData)
+    bpy.utils.unregister_class(PurgeStopmagicData)
     bpy.utils.unregister_class(InitializeHandler)
-    bpy.utils.unregister_class(KeymeshPanel)
-    bpy.app.handlers.load_post.remove(km_frame_handler)
+    bpy.utils.unregister_class(StopmagicPanel)
+    bpy.app.handlers.load_post.remove(sm_frame_handler)
     bpy.app.handlers.frame_change_post.clear()
     addon_keymaps.clear()
 
 
-##if __name__ == "__main__":
-##    register()
+if __name__ == "__main__":
+    register()
