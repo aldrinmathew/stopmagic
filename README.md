@@ -1,5 +1,7 @@
-![](./media/panel.png)
-[![](https://img.shields.io/badge/DOWNLOAD-2D8CFF?style=for-the-badge&logoColor=white)](https://github.com/aldrinsartfactory/stopmagic/releases)
+![](./media/cover.png)
+[![](https://img.shields.io/badge/DOWNLOAD-2D8CFF?style=for-the-badge)](https://github.com/aldrinsartfactory/stopmagic/releases)
+[![](https://img.shields.io/badge/OFFICIAL%20WIKI-palegreen?style=for-the-badge)](https://github.com/aldrinsartfactory/stopmagic/wiki)
+[![](https://img.shields.io/badge/INSTALLATION%20INSTRUCTIONS-FFDD99?style=for-the-badge)](https://github.com/aldrinsartfactory/stopmagic/wiki/Installing-the-Addon)
 
 Stopmagic gives you the power of creating amazing Stop Motion animations faster and easier than ever before. This project is maintained by Aldrin Mathew.
 
