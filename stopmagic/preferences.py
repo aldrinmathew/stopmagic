@@ -42,7 +42,7 @@ def register_properties() -> None:
         description="Skip this many frames forwards or backwards",
         subtype="NONE",
         options=set(),
-        default=3,
+        default=get_preferences(__package__).frame_skip_count,
         min=1,
         max=2**31 - 1,
         soft_min=1,
@@ -53,7 +53,7 @@ def register_properties() -> None:
         name="Insert Keyframe",
         description="Whether to insert keyframe after skipping frames",
         options=set(),
-        default=False,
+        default=get_preferences(__package__).insert_keyframe_after_skip,
     )
 
 
