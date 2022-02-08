@@ -8,13 +8,13 @@ __package__ = "stopmagic"
 bl_info = {
     "name": "Stopmagic",
     "author": "Aldrin Mathew",
-    "version": (0, 2, 0),
+    "version": (0, 2, 1),
     "blender": (2, 91, 0),
     "location": "Sidebar > Stopmagic",
     "warning": "Experimental",
     "category": "Animation",
     "description": "Improve your Stop motion workflow. Use shortcuts 'Ctrl Shift X' & 'Ctrl Shift Z' for faster workflows.",
-    "doc_url": "https://github.com/aldrinsartfactory/stopmagic",
+    "doc_url": "https://github.com/aldrinsartfactory/stopmagic/wiki",
 }
 
 
