@@ -27,4 +27,20 @@ def key_config() -> List[Tuple[bpy.types.KeyMap, bpy.types.KeyMapItem]]:
             ctrl=True,
         )
         result.append((keyMapView, keyMapItem))
+        keyMapItem = keyMapView.keymap_items.new(
+            "object.keyed_frame_previous",
+            type="C",
+            value="PRESS",
+            shift=True,
+            ctrl=True,
+        )
+        result.append((keyMapView, keyMapItem))
+        keyMapItem = keyMapView.keymap_items.new(
+            "object.keyed_frame_next",
+            type="V",
+            value="PRESS",
+            shift=True,
+            ctrl=True,
+        )
+        result.append((keyMapView, keyMapItem))
     return result

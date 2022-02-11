@@ -6,3 +6,7 @@ from .next_qualified_frame import *
 from .update_stopmagic import *
 from .key_config import *
 from .get_preferences import *
+from .past_object import *
+from .future_object import *
+from .get_object_keyframes import *
+from .handle_onion_constraints import *

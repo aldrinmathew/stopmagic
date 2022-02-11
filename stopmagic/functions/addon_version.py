@@ -13,5 +13,5 @@ def addon_version(info: "dict[str, Any]") -> str:
             result += "."
         i += 1
     if "warning" in info:
-        result += " " + info["warning"]
+        result += "-" + info["warning"]
     return result
