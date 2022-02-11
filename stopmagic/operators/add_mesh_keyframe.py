@@ -2,7 +2,7 @@ import bpy
 from ..functions.insert_mesh_keyframe import *
 
 class AddMeshKeyframe(bpy.types.Operator):
-    """Adds a Keyframe to the currently selected Mesh, after which you can edit the mesh to keep the changes."""
+    """Adds a Keyframe to the currently selected Mesh, after which you can edit the mesh to keep the changes"""
 
     bl_idname = "object.keyframe_mesh"
     bl_label = "Keyframe Mesh"
@@ -10,10 +10,10 @@ class AddMeshKeyframe(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None
+        return context.view_layer.objects.active is not None
 
-    def execute(self, context):
-        ob = context.active_object
+    def execute(self, context: bpy.types.Context):
+        ob = context.view_layer.objects.active
         insert_mesh_keyframe(ob)
         return {"FINISHED"}
 

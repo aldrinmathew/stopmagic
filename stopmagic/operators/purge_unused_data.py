@@ -3,7 +3,7 @@ from ..functions.update_stopmagic import *
 
 
 class PurgeUnusedData(bpy.types.Operator):
-    """Deletes all unushed Mesh data."""
+    """Deletes all unushed Mesh data created by the addon"""
 
     bl_idname = "object.purge_unused_data"
     bl_label = "Purge Unused Data"
@@ -15,7 +15,8 @@ class PurgeUnusedData(bpy.types.Operator):
     def execute(self, context):
         used_sm_mesh = {}
 
-        for ob in bpy.data.objects:
+        for item in bpy.data.objects:
+            ob: bpy.types.Object = item
             if ob.get("sm_id") is None:
                 continue
 
@@ -23,12 +24,14 @@ class PurgeUnusedData(bpy.types.Operator):
             used_sm_mesh[sm_id] = []
 
             fcurves = ob.animation_data.action.fcurves
-            for fcurve in fcurves:
+            for item in fcurves:
+                fcurve: bpy.types.FCurve = item
                 if fcurve.data_path != '["sm_datablock"]':
                     continue
-
-                keyframePoints = fcurve.keyframe_points
-                for keyframe in keyframePoints:
+                #
+                keyframe_points = fcurve.keyframe_points
+                for item in keyframe_points:
+                    keyframe: bpy.types.Keyframe = item
                     used_sm_mesh[sm_id].append(keyframe.co.y)
 
         delete_mesh = []
@@ -49,9 +52,11 @@ class PurgeUnusedData(bpy.types.Operator):
                 delete_mesh.append(mesh)
                 continue
 
-        print("purged")
+        if len(delete_mesh) == 0:
+            self.report({'INFO'}, 'No meshes were removed by Stopmagic')
+        else:
+            self.report({'INFO'}, str(len(delete_mesh)) + ' meshes were removed by Stopmagic')
         for mesh in delete_mesh:
-            print(mesh.name)
             mesh.use_fake_user = False
 
         update_stopmagic(bpy.context.scene)
