@@ -2,9 +2,8 @@ from typing import List
 import bpy
 
 
-def get_object_keyframes() -> List[int]:
+def get_object_keyframes(obj: bpy.types.Object) -> List[int]:
     """Get all keyframes that has mesh keyframes, associated with the active object"""
-    obj = bpy.context.view_layer.objects.active
     keyframes: List[int] = []
     if obj is not None:
         if obj.get("sm_id") is not None:

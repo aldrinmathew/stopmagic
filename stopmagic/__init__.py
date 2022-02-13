@@ -24,7 +24,7 @@ __package__ = "stopmagic"
 bl_info = {
     "name": "Stopmagic",
     "author": "Aldrin Mathew",
-    "version": (0, 3, 0),
+    "version": (0, 3, 1),
     "blender": (2, 91, 0),
     "location": "Sidebar > Stopmagic",
     "warning": "beta",

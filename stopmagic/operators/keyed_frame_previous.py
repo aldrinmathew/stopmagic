@@ -17,7 +17,7 @@ class KeyedFramePrevious(bpy.types.Operator):
         return context.view_layer.objects.active is not None
 
     def execute(self, context: bpy.types.Context) -> Set[int] | Set[str]:
-        keyframes = get_object_keyframes()
+        keyframes = get_object_keyframes(context.view_layer.objects.active)
         if len(keyframes) > 0:
             frame = bpy.context.scene.frame_current
             keyframes = [k for k in keyframes if k < frame]
