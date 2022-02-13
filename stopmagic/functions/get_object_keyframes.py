@@ -19,7 +19,10 @@ def get_object_keyframes() -> List[int]:
                             #
                             keyframe_points = fcurve.keyframe_points
                             for item in keyframe_points:
-                                for val in item.co:
-                                    keyframes.append(int(val))
+                                i = 0
+                                while i < len(item.co):
+                                    keyframes.append(int(item.co[i]))
+                                    i += 2
+
                             return keyframes
     return keyframes
