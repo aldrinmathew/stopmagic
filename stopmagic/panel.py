@@ -26,6 +26,10 @@ class StopmagicPanel(bpy.types.Panel):
 
     # For showing version to the user
     bl_info: "dict[str, Any]" = {}
+    expand_find_frame = True
+    expand_frame_skip = True
+    expand_onion_skin = True
+    expand_status_options = False
 
     @staticmethod
     def set_info(info: "dict[str, Any]"):
@@ -34,67 +38,107 @@ class StopmagicPanel(bpy.types.Panel):
     def draw(self, context: bpy.context):
         column = self.layout.column()
         column.scale_y = 1.5
-        column.separator()
         column.operator("object.keyframe_mesh", text="Keyframe Mesh")
-        column.separator()
-        column = self.layout.column()
-        column.label(text="Find Keyed Frame")
-        row = column.row()
-        row.operator(
-            "object.keyed_frame_previous", text="Previous", icon_value=499
-        )
-        row.operator("object.keyed_frame_next", text="Next", icon_value=500)
         self.layout.separator()
         column = self.layout.column()
-        column.label(text="Frame Skip")
-        column.prop(context.scene, "stopmagic_insert_frame_after_skip")
-        column.prop(context.scene, "stopmagic_frame_skip_count")
+        box = column.box()
+        row = box.row()
+        row.label(text="Find Keyed Frame", icon="ZOOM_PREVIOUS")
+        row.prop(
+            context.scene,
+            "stopmagic_expand_find_frame",
+            icon="TRIA_UP" if context.scene.stopmagic_expand_find_frame else "TRIA_DOWN",
+            emboss=False
+        )
+        if context.scene.stopmagic_expand_find_frame:
+            row = box.row()
+            row.operator("object.keyed_frame_previous", text="Previous", icon_value=499)
+            row.operator("object.keyed_frame_next", text="Next", icon_value=500)
+        self.layout.separator()
         column = self.layout.column()
-        column.scale_y = 1.5
-        row = column.row(align=False)
-        row.alignment = "EXPAND"
-        row.operator(
-            "object.frame_backward_keyframe_mesh",
-            text=r"Backward",
-            emboss=True,
-            depress=False,
-            icon_value=6,
+        box = column.box()
+        row = box.row()
+        row.label(text="Frame Skip", icon="TRACKING_FORWARDS")
+        row.prop(
+            context.scene,
+            "stopmagic_expand_frame_skip",
+            icon="TRIA_UP" if context.scene.stopmagic_expand_frame_skip else "TRIA_DOWN",
+            emboss=False
         )
-        row.operator(
-            "object.frame_forward_keyframe_mesh",
-            text=r"Forward",
-            emboss=True,
-            depress=False,
-            icon_value=4,
-        )
-        column.separator()
+        if context.scene.stopmagic_expand_frame_skip:
+            box.prop(context.scene, "stopmagic_insert_frame_after_skip")
+            box.prop(context.scene, "stopmagic_frame_skip_count")
+            column = box.column()
+            column.scale_y = 1.5
+            row = column.row(align=False)
+            row.alignment = "EXPAND"
+            row.operator(
+                "object.frame_backward_keyframe_mesh",
+                text=r"Backward",
+                emboss=True,
+                depress=False,
+                icon_value=6,
+            )
+            row.operator(
+                "object.frame_forward_keyframe_mesh",
+                text=r"Forward",
+                emboss=True,
+                depress=False,
+                icon_value=4,
+            )
+        self.layout.separator()
         column = self.layout.column()
-        column.label(text="Onion Skin (Experimental)")
-        column.prop(context.scene, "stopmagic_onion_skin_enabled")
-        if context.scene.stopmagic_onion_skin_enabled:
-            row = column.row()
-            lcolumn = row.column()
-            lcolumn.label(text="Past")
-            lcolumn.prop(context.scene, "stopmagic_past_offset")
-            lcolumn.prop(context.scene, "stopmagic_past_color")
-            rcolumn = row.column()
-            rcolumn.label(text="Future")
-            rcolumn.prop(context.scene, "stopmagic_future_offset")
-            rcolumn.prop(context.scene, "stopmagic_future_color")
-        column.separator()
+        box = column.box()
+        row = box.row()
+        row.label(text="Onion Skin", icon="GHOST_ENABLED")
+        row.prop(
+            context.scene,
+            "stopmagic_expand_onion_skin",
+            icon="TRIA_UP" if context.scene.stopmagic_expand_onion_skin else "TRIA_DOWN",
+            emboss=False
+        )
+        if context.scene.stopmagic_expand_onion_skin:
+            box.prop(context.scene, "stopmagic_onion_skin_enabled")
+            if context.scene.stopmagic_onion_skin_enabled:
+                box.prop(context.scene, "stopmagic_onion_display_type")
+                row = box.row()
+                lcolumn = row.column()
+                lcolumn.label(text="Past")
+                if context.scene.stopmagic_onion_display_type == "POSE":
+                    lcolumn.prop(context.scene, "stopmagic_past_count")
+                else:
+                    lcolumn.prop(context.scene, "stopmagic_past_offset")
+                lcolumn.prop(context.scene, "stopmagic_past_color")
+                rcolumn = row.column()
+                rcolumn.label(text="Future")
+                if context.scene.stopmagic_onion_display_type == "POSE":
+                    rcolumn.prop(context.scene, "stopmagic_future_count")
+                else:
+                    rcolumn.prop(context.scene, "stopmagic_future_offset")
+                rcolumn.prop(context.scene, "stopmagic_future_color")
+        self.layout.separator()
         column = self.layout.column()
-        column.label(text="Status Options")
-        column.operator(
-            "object.purge_unused_data", text="Purge Unused Data", icon="TRASH"
+        box = column.box()
+        row = box.row()
+        row.label(text="Status Options", icon="TOOL_SETTINGS")
+        row.prop(
+            context.scene,
+            "stopmagic_expand_status_options",
+            icon="TRIA_UP" if context.scene.stopmagic_expand_status_options else "TRIA_DOWN",
+            emboss=False
         )
-        column.operator(
-            "object.initialize_handler",
-            text="Initialize Frame Handler",
-            icon="FILE_REFRESH",
-        )
+        if context.scene.stopmagic_expand_status_options:
+            box.operator(
+                "object.purge_unused_data", text="Purge Unused Data", icon="TRASH"
+            )
+            box.operator(
+                "object.initialize_handler",
+                text="Initialize Frame Handler",
+                icon="FILE_REFRESH",
+            )
         if addon_remote_version() is not None:
             if "v" + functions.addon_version(self.bl_info) != addon_remote_version():
-                column.separator()
+                self.layout.separator()
                 column.label(
                     text="v"
                     + functions.addon_version(StopmagicPanel.bl_info)
@@ -105,7 +149,7 @@ class StopmagicPanel(bpy.types.Panel):
                     "stopmagic.upgrade_addon", text="Upgrade Addon", icon="URL"
                 )
         else:
-            column.separator()
+            self.layout.separator()
             column.label(text="v" + functions.addon_version(StopmagicPanel.bl_info))
             column.operator("stopmagic.upgrade_addon", text="Upgrade Addon", icon="URL")
 
@@ -113,13 +157,17 @@ class StopmagicPanel(bpy.types.Panel):
 def register() -> None:
     global addon_info
     bpy.utils.register_class(StopmagicPanel)
-    resp = requests.get(
-        "https://api.github.com/repos/aldrinsartfactory/stopmagic/releases/latest"
-    )
-    if resp.status_code == 200:
-        addon_info = resp.json()
-        if addon_remote_version() is not None:
-            UpgradeAddon.set_tag_name(addon_remote_version())
+    try:
+        resp = requests.get(
+            url="https://api.github.com/repos/aldrinsartfactory/stopmagic/releases/latest",
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            addon_info = resp.json()
+            if addon_remote_version() is not None:
+                UpgradeAddon.set_tag_name(addon_remote_version())
+    except:
+        print("Exception while fetching addon data")
 
 
 def unregister() -> None:
