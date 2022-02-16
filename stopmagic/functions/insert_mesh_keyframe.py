@@ -77,8 +77,16 @@ def insert_mesh_keyframe_ex(obj: bpy.types.Object) -> bool:
     return proceed
 
 
+# Get the appropriate index for the mesh about to be created
 def get_next_mesh_index(obj: bpy.types.Object) -> int:
     if obj.get("sm_datablock") is not None:
-        return obj.get("sm_datablock") + 1
+        values = get_object_key_values(obj)
+        if len(values) > 0:
+            largest = values[0]
+            for val in values:
+                largest = val if val > largest else largest
+            return largest + 1
+        else:
+            return 0
     else:
         return 0
