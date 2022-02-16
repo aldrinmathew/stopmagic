@@ -2,9 +2,11 @@ from __future__ import annotations
 from typing import Any
 import bpy
 import bmesh
+from stopmagic.functions.get_object_key_values import get_object_key_values
 from stopmagic.functions.past_object import *
 from stopmagic.functions.future_object import *
 from stopmagic.functions.handle_onion_constraints import *
+from stopmagic.functions.get_object_keyframes import *
 
 
 def handle_collections(past: bpy.types.Object, future: bpy.types.Object) -> None:
@@ -88,27 +90,100 @@ def handle_onion_skin(dummy):
             if obj.get("sm_datablock") is not None:
                 name = obj.name
                 frame = bpy.context.scene.frame_current
-                for mesh in bpy.data.meshes:
-                    i = frame - poffset
-                    while i <= frame:
-                        mesh_name: str = mesh.name
-                        if mesh_name.find(name + "_sm_" + str(i)) != -1:
-                            pmeshes.append(mesh)
-                        i += 1
-                    i = frame + 1
-                    while i <= (frame + foffset):
-                        if mesh.name == name + "_sm_" + str(i):
-                            fmeshes.append(mesh)
-                        i += 1
+                keyframes = get_object_keyframes(obj)
+                key_values = get_object_key_values(obj)
+                if len(key_values) > 0:
+                    p_frames = []
+                    p_key_values = []
+                    f_frames = []
+                    f_key_values = []
+                    index = 0
+                    while index < len(keyframes):
+                        if keyframes[index] < frame:
+                            p_key_values.append(key_values[index])
+                            p_frames.append(keyframes[index])
+                        elif keyframes[index] > frame:
+                            f_key_values.append(key_values[index])
+                            f_frames.append(keyframes[index])
+                        index += 1
+                    # To make sure that the onion for the previous keyframe doesn't
+                    # overlay the current mesh
+                    if len(p_key_values) > 0 and frame not in keyframes:
+                        p_frames.pop(len(p_key_values) - 1)
+                        p_key_values.pop(len(p_key_values) - 1)
+                    # To make sure that, if there are no previous keyframes then the
+                    # onion for the next keyframe doesn't overlay the current mesh
+                    elif len(p_key_values) == 0 and len(f_key_values) > 0 and frame not in keyframes:
+                        f_frames.pop(0)
+                        f_key_values.pop(0)
                     #
-                #
-                # To make sure that the onion for the previous keyframe doesn't overlay on the current frame
-                if len(pmeshes) > 0:
-                    pmeshes.pop(len(pmeshes) - 1)
-                else:
-                    if len(fmeshes) > 0:
-                        fmeshes.remove(fmeshes[0])
-                #
+                    if bpy.context.scene.stopmagic_onion_display_type == "POSE":
+                        p_count = bpy.context.scene.stopmagic_past_count
+                        f_count = bpy.context.scene.stopmagic_future_count
+                        if len(p_key_values) > p_count:
+                            index = 0
+                            bound = len(p_key_values) - p_count
+                            while index < bound:
+                                p_frames.pop(0)
+                                p_key_values.pop(0)
+                                index += 1
+                        if len(f_key_values) > f_count:
+                            index = f_count
+                            bound = len(f_key_values)
+                            while index < bound:
+                                f_frames.pop(index)
+                                f_key_values.pop(index)
+                                index += 1
+                    elif bpy.context.scene.stopmagic_onion_display_type == "RANGE":
+                        p_result = []
+                        f_result = []
+                        i = 0
+                        while i < len(p_frames):
+                            if p_frames[i] > (
+                                frame - bpy.context.scene.stopmagic_past_offset
+                            ):
+                                p_result.append(p_key_values[i])
+                            i += 1
+                        i = 0
+                        while i < len(f_frames):
+                            if f_frames[i] < (
+                                frame + bpy.context.scene.stopmagic_future_offset
+                            ):
+                                f_result.append(f_key_values[i])
+                            i += 1
+                        p_key_values = p_result
+                        f_key_values = f_result
+                    #
+                    if len(p_key_values) > 0:
+                        for pkey in p_key_values:
+                            pmeshes.append(
+                                bpy.data.meshes.get(name + "_sm_" + str(pkey))
+                            )
+                    if len(f_key_values) > 0:
+                        for fkey in f_key_values:
+                            fmeshes.append(
+                                bpy.data.meshes.get(name + "_sm_" + str(fkey))
+                            )
+                # for mesh in bpy.data.meshes:
+                #     i = frame - poffset
+                #     while i <= frame:
+                #         mesh_name: str = mesh.name
+                #         if mesh_name.find(name + "_sm_" + str(i)) != -1:
+                #             pmeshes.append(mesh)
+                #         i += 1
+                #     i = frame + 1
+                #     while i <= (frame + foffset):
+                #         if mesh.name == name + "_sm_" + str(i):
+                #             fmeshes.append(mesh)
+                #         i += 1
+                #     #
+                # #
+                # if len(pmeshes) > 0:
+                #     pmeshes.pop(len(pmeshes) - 1)
+                # else:
+                #     if len(fmeshes) > 0:
+                #         fmeshes.remove(fmeshes[0])
+                # #
             #
         #
         # Past
@@ -155,8 +230,9 @@ def change_onion_color(past: bool, color: bpy.props.FloatVectorProperty):
 
 def clear_onion_data():
     collection = bpy.data.collections.get("Stopmagic")
-    for obj in collection.objects:
-        mesh = obj.data
-        bpy.data.objects.remove(obj, do_unlink=True)
-        bpy.data.meshes.remove(mesh, do_unlink=True)
+    if collection.get("objects") is not None:
+        for obj in collection.objects:
+            mesh = obj.data
+            bpy.data.objects.remove(obj, do_unlink=True)
+            bpy.data.meshes.remove(mesh, do_unlink=True)
     bpy.data.collections.remove(collection)
