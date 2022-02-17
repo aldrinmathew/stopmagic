@@ -1,4 +1,7 @@
+![wakatime](https://wakatime.com/badge/user/af510812-c60b-4a16-bb6e-fada8313362b/project/baf381b8-0fea-4eaa-bdf2-b64380ac51f1.svg)
+
 ![](./media/cover.png)
+
 [![](https://img.shields.io/badge/DOWNLOAD-2D8CFF?style=for-the-badge)](https://github.com/aldrinsartfactory/stopmagic/releases)
 [![](https://img.shields.io/badge/OFFICIAL%20WIKI-palegreen?style=for-the-badge)](https://github.com/aldrinsartfactory/stopmagic/wiki)
 [![](https://img.shields.io/badge/INSTALLATION%20INSTRUCTIONS-FFDD99?style=for-the-badge)](https://github.com/aldrinsartfactory/stopmagic/wiki/Installing-the-Addon)
