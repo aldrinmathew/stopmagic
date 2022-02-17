@@ -300,6 +300,12 @@ def register_properties() -> None:
         options=set(),
         default=False,
     )
+    bpy.types.Scene.stopmagic_expand_contributions = bpy.props.BoolProperty(
+        name="",
+        description="",
+        options=set(),
+        default=True,
+    )
     bpy.types.Scene.stopmagic_expand_status_options = bpy.props.BoolProperty(
         name="",
         description="",
@@ -321,6 +327,7 @@ def unregister_properties() -> None:
     del bpy.types.Scene.stopmagic_expand_find_frame
     del bpy.types.Scene.stopmagic_expand_frame_skip
     del bpy.types.Scene.stopmagic_expand_onion_skin
+    del bpy.types.Scene.stopmagic_expand_contributions
     del bpy.types.Scene.stopmagic_expand_status_options
 
 
