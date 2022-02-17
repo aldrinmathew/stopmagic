@@ -199,7 +199,7 @@ def register_properties() -> None:
         description="Change the type of display for the onion skin",
         options=set(),
         default=get_preferences(__package__).onion_display_type,
-        update=handle_display
+        update=handle_display,
     )
     bpy.types.Scene.stopmagic_past_count = bpy.props.IntProperty(
         name="Poses",
@@ -212,7 +212,7 @@ def register_properties() -> None:
         soft_min=1,
         soft_max=10,
         step=1,
-        update=handle_display
+        update=handle_display,
     )
     bpy.types.Scene.stopmagic_past_offset = bpy.props.IntProperty(
         name="Offset",
@@ -238,7 +238,7 @@ def register_properties() -> None:
         soft_min=1,
         soft_max=10,
         step=1,
-        update=handle_display
+        update=handle_display,
     )
     bpy.types.Scene.stopmagic_future_offset = bpy.props.IntProperty(
         name="Offset",

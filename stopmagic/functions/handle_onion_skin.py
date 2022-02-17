@@ -73,6 +73,8 @@ def handle_onion_skin(dummy):
         #
         #   Onion Skin objects visibility
         #
+        pobject.color = bpy.context.scene.stopmagic_past_color
+        fobject.color = bpy.context.scene.stopmagic_future_color
         pmaterial = bpy.data.materials.get("stopmagic_material_past")
         fmaterial = bpy.data.materials.get("stopmagic_material_future")
         if pmaterial is None:
@@ -89,11 +91,13 @@ def handle_onion_skin(dummy):
             ].default_value = bpy.context.scene.stopmagic_past_color
             opacity = bpy.context.scene.stopmagic_past_color[3]
             if opacity > 0 and opacity < 1:
-                p_principled.inputs[21].default_value = bpy.context.scene.stopmagic_past_color[3]
+                p_principled.inputs[
+                    21
+                ].default_value = bpy.context.scene.stopmagic_past_color[3]
             else:
                 p_principled.inputs[21].default_value = 0.3
             pmaterial.diffuse_color = bpy.context.scene.stopmagic_past_color
-            pmaterial.blend_method = 'HASHED'
+            pmaterial.blend_method = "HASHED"
         if fmaterial is None:
             fmaterial = bpy.data.materials.new(name="stopmagic_material_future")
             fobject.active_material = fmaterial
@@ -108,11 +112,13 @@ def handle_onion_skin(dummy):
             ].default_value = bpy.context.scene.stopmagic_future_color
             opacity = bpy.context.scene.stopmagic_future_color[3]
             if opacity > 0 and opacity < 1:
-                f_principled.inputs[21].default_value = bpy.context.scene.stopmagic_future_color[3]
+                f_principled.inputs[
+                    21
+                ].default_value = bpy.context.scene.stopmagic_future_color[3]
             else:
                 f_principled.inputs[21].default_value = 0.3
             fmaterial.diffuse_color = bpy.context.scene.stopmagic_future_color
-            fmaterial.blend_method = 'HASHED'
+            fmaterial.blend_method = "HASHED"
         #
         #   Check and collect meshes within the range specified by the user
         #
@@ -239,16 +245,51 @@ def change_onion_color(past: bool, color: bpy.props.FloatVectorProperty):
     if past:
         pobject = get_past_object(past_exists)
         pobject.color = list(color)
+        pmaterial = bpy.data.materials.get("stopmagic_material_past")
+        if pmaterial is not None:
+            pmaterial.diffuse_color = color
+            if not pmaterial.use_nodes:
+                pmaterial.use_nodes = True
+            if pmaterial.node_tree.get("Principled BSDF") is not None:
+                p_principled = pmaterial.node_tree.get("Principled BSDF")
+                p_principled.inputs[0] = list(color)
+                opacity = color[3]
+                if opacity > 0 and opacity < 1:
+                    p_principled.inputs[21].default_value = color[3]
+                else:
+                    p_principled.inputs[21].default_value = 0.3
     else:
         fobject = get_future_object(future_exists)
         fobject.color = list(color)
+        fmaterial = bpy.data.materials.get("stopmagic_material_future")
+        if fmaterial is not None:
+            fmaterial.diffuse_color = color
+            if not fmaterial.use_nodes:
+                fmaterial.use_nodes = True
+            if fmaterial.node_tree.get("Principled BSDF") is not None:
+                f_principled = fmaterial.node_tree.get("Principled BSDF")
+                f_principled.inputs[0] = list(color)
+                opacity = color[3]
+                if opacity > 0 and opacity < 1:
+                    f_principled.inputs[21].default_value = color[3]
+                else:
+                    f_principled.inputs[21].default_value = 0.3
 
 
 def clear_onion_data():
     collection = bpy.data.collections.get("Stopmagic")
+    pmaterial = bpy.data.materials.get("stopmagic_material_past")
+    fmaterial = bpy.data.materials.get("stopmagic_material_future")
+    if pmaterial is not None:
+        bpy.data.materials.remove(pmaterial, do_unlink=True)
+    if fmaterial is not None:
+        bpy.data.materials.remove(fmaterial, do_unlink=True)
     if collection.get("objects") is not None:
         for obj in collection.objects:
             mesh = obj.data
-            bpy.data.objects.remove(obj, do_unlink=True)
+            obj.name = "removed"
+            bpy.context.scene.objects.unlink(obj)
             bpy.data.meshes.remove(mesh, do_unlink=True)
+            bpy.data.objects.remove(obj, do_unlink=True)
     bpy.data.collections.remove(collection)
+    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=False, do_recursive=False)
