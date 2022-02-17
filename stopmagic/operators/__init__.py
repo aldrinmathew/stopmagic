@@ -6,6 +6,7 @@ from . import skip_frame_forward
 from . import keyed_frame_next
 from . import keyed_frame_previous
 from . import upgrade_addon
+from . import contributions
 
 from .add_mesh_keyframe import AddMeshKeyframe
 from .initialize_handler import InitializeHandler
