@@ -4,6 +4,7 @@ import bpy
 from stopmagic import functions
 import requests
 from stopmagic.operators import UpgradeAddon
+from stopmagic.icons import AddonIcons
 
 
 addon_info = {}
@@ -36,10 +37,26 @@ class StopmagicPanel(bpy.types.Panel):
         StopmagicPanel.bl_info = info
 
     def draw(self, context: bpy.context):
+        if addon_remote_version() is not None:
+            if "v" + functions.addon_version(self.bl_info) != addon_remote_version():
+                column = self.layout.column()
+                box = column.box()
+                box.label(
+                    text="v"
+                    + functions.addon_version(StopmagicPanel.bl_info)
+                    + "   >>   "
+                    + addon_remote_version()
+                )
+                box.operator(
+                    "stopmagic.upgrade_addon", text="Upgrade Addon", icon="URL"
+                )
+                self.layout.separator()
+        # SECTION :: Keyframe Mesh
         column = self.layout.column()
         column.scale_y = 1.5
         column.operator("object.keyframe_mesh", text="Keyframe Mesh")
         self.layout.separator()
+        # SECTION :: Find Keyed Frame
         column = self.layout.column()
         box = column.box()
         row = box.row()
@@ -47,14 +64,17 @@ class StopmagicPanel(bpy.types.Panel):
         row.prop(
             context.scene,
             "stopmagic_expand_find_frame",
-            icon="TRIA_UP" if context.scene.stopmagic_expand_find_frame else "TRIA_DOWN",
-            emboss=False
+            icon="TRIA_UP"
+            if context.scene.stopmagic_expand_find_frame
+            else "TRIA_DOWN",
+            emboss=False,
         )
         if context.scene.stopmagic_expand_find_frame:
             row = box.row()
             row.operator("object.keyed_frame_previous", text="Previous", icon_value=499)
             row.operator("object.keyed_frame_next", text="Next", icon_value=500)
         self.layout.separator()
+        # SECTION :: Frame Skip
         column = self.layout.column()
         box = column.box()
         row = box.row()
@@ -62,8 +82,10 @@ class StopmagicPanel(bpy.types.Panel):
         row.prop(
             context.scene,
             "stopmagic_expand_frame_skip",
-            icon="TRIA_UP" if context.scene.stopmagic_expand_frame_skip else "TRIA_DOWN",
-            emboss=False
+            icon="TRIA_UP"
+            if context.scene.stopmagic_expand_frame_skip
+            else "TRIA_DOWN",
+            emboss=False,
         )
         if context.scene.stopmagic_expand_frame_skip:
             box.prop(context.scene, "stopmagic_insert_frame_after_skip")
@@ -87,6 +109,7 @@ class StopmagicPanel(bpy.types.Panel):
                 icon_value=4,
             )
         self.layout.separator()
+        # SECTION :: Onion Skin
         column = self.layout.column()
         box = column.box()
         row = box.row()
@@ -94,8 +117,10 @@ class StopmagicPanel(bpy.types.Panel):
         row.prop(
             context.scene,
             "stopmagic_expand_onion_skin",
-            icon="TRIA_UP" if context.scene.stopmagic_expand_onion_skin else "TRIA_DOWN",
-            emboss=False
+            icon="TRIA_UP"
+            if context.scene.stopmagic_expand_onion_skin
+            else "TRIA_DOWN",
+            emboss=False,
         )
         if context.scene.stopmagic_expand_onion_skin:
             box.prop(context.scene, "stopmagic_onion_skin_enabled")
@@ -117,6 +142,38 @@ class StopmagicPanel(bpy.types.Panel):
                     rcolumn.prop(context.scene, "stopmagic_future_offset")
                 rcolumn.prop(context.scene, "stopmagic_future_color")
         self.layout.separator()
+        # SECTION :: Contribution
+        column = self.layout.column()
+        box = column.box()
+        row = box.row()
+        row.label(text="Make a contribution", icon="FUND")
+        row.prop(
+            context.scene,
+            "stopmagic_expand_contributions",
+            icon="TRIA_UP"
+            if context.scene.stopmagic_expand_contributions
+            else "TRIA_DOWN",
+            emboss=False,
+        )
+        if context.scene.stopmagic_expand_contributions:
+            row = box.row()
+            row.operator(
+                "stopmagic.contribution_paypal",
+                text="PayPal",
+                icon_value=AddonIcons.paypal_color().icon_id,
+            )
+            row.operator(
+                "stopmagic.contribution_kofi",
+                text="Ko-Fi",
+                icon_value=AddonIcons.kofi_color().icon_id,
+            )
+            box.operator(
+                "stopmagic.contribution_github",
+                text="Github",
+                icon_value=AddonIcons.github_color().icon_id,
+            )
+        self.layout.separator()
+        # SECTION :: Status Options
         column = self.layout.column()
         box = column.box()
         row = box.row()
@@ -124,8 +181,10 @@ class StopmagicPanel(bpy.types.Panel):
         row.prop(
             context.scene,
             "stopmagic_expand_status_options",
-            icon="TRIA_UP" if context.scene.stopmagic_expand_status_options else "TRIA_DOWN",
-            emboss=False
+            icon="TRIA_UP"
+            if context.scene.stopmagic_expand_status_options
+            else "TRIA_DOWN",
+            emboss=False,
         )
         if context.scene.stopmagic_expand_status_options:
             box.operator(
@@ -136,22 +195,13 @@ class StopmagicPanel(bpy.types.Panel):
                 text="Initialize Frame Handler",
                 icon="FILE_REFRESH",
             )
-        if addon_remote_version() is not None:
-            if "v" + functions.addon_version(self.bl_info) != addon_remote_version():
-                self.layout.separator()
-                column.label(
-                    text="v"
-                    + functions.addon_version(StopmagicPanel.bl_info)
-                    + "   >>   "
-                    + addon_remote_version()
-                )
-                column.operator(
-                    "stopmagic.upgrade_addon", text="Upgrade Addon", icon="URL"
-                )
-        else:
+        # Fallback upgrade button in case of connectivity issues or invalid responses
+        if addon_remote_version() is None:
             self.layout.separator()
-            column.label(text="v" + functions.addon_version(StopmagicPanel.bl_info))
-            column.operator("stopmagic.upgrade_addon", text="Upgrade Addon", icon="URL")
+            column = self.layout.column()
+            box = column.box()
+            box.label(text="v" + functions.addon_version(StopmagicPanel.bl_info))
+            box.operator("stopmagic.upgrade_addon", text="Upgrade Addon", icon="URL")
 
 
 def register() -> None:
