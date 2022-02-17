@@ -8,23 +8,27 @@ if "bpy" in locals():
     importlib.reload(operators)
     importlib.reload(functions)
     importlib.reload(panel)
+    importlib.reload(icons)
 else:
     from stopmagic import preferences
     from stopmagic import operators
     from stopmagic import functions
     from stopmagic import panel
+    from stopmagic import icons
 
 from typing import List, Tuple
 import bpy
 import re
-from os.path import basename, dirname
+import os.path
+
 
 __package__ = "stopmagic"
+
 
 bl_info = {
     "name": "Stopmagic",
     "author": "Aldrin Mathew",
-    "version": (0, 3, 1),
+    "version": (0, 3, 2),
     "blender": (2, 91, 0),
     "location": "Sidebar > Stopmagic",
     "warning": "beta",
@@ -39,6 +43,7 @@ addon_keymaps: List[Tuple[bpy.types.KeyMap, bpy.types.KeyMapItem]] = []
 
 def register() -> None:
     global addon_keymaps
+    icons.register()
     preferences.register()
     panel.StopmagicPanel.bl_info = bl_info
     panel.register()
@@ -50,6 +55,7 @@ def register() -> None:
     operators.keyed_frame_next.register()
     operators.keyed_frame_previous.register()
     operators.upgrade_addon.register()
+    operators.contributions.register()
     bpy.app.handlers.load_post.append(functions.frame_handler)
     bpy.app.handlers.load_post.append(functions.handle_onion_skin)
     bpy.app.handlers.frame_change_post.clear()
@@ -69,11 +75,13 @@ def unregister() -> None:
     operators.keyed_frame_next.unregister()
     operators.keyed_frame_previous.unregister()
     operators.upgrade_addon.unregister()
+    operators.contributions.unregister()
     panel.unregister()
     bpy.app.handlers.load_post.clear()
     bpy.app.handlers.load_post.clear()
     bpy.app.handlers.frame_change_post.clear()
     bpy.app.handlers.frame_change_pre.clear()
+    icons.unregister()
     addon_keymaps.clear()
 
 
