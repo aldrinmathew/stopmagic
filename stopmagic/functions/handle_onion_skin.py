@@ -73,14 +73,46 @@ def handle_onion_skin(dummy):
         #
         #   Onion Skin objects visibility
         #
-        pobject.color = bpy.context.scene.stopmagic_past_color
-        fobject.color = bpy.context.scene.stopmagic_future_color
-        for area in bpy.context.screen.areas:
-            if area.type == "VIEW_3D":
-                for space in area.spaces:
-                    if space.type == "VIEW_3D":
-                        space.shading.color_type = "OBJECT"
-
+        pmaterial = bpy.data.materials.get("stopmagic_material_past")
+        fmaterial = bpy.data.materials.get("stopmagic_material_future")
+        if pmaterial is None:
+            pmaterial = bpy.data.materials.new(name="stopmagic_material_past")
+            pobject.active_material = pmaterial
+            pmaterial.use_nodes = True
+            pmat_output = pmaterial.node_tree.nodes.get("Material Output")
+            p_principled = pmaterial.node_tree.nodes.get("Principled BSDF")
+            pmaterial.node_tree.links.new(
+                pmat_output.inputs[0], p_principled.outputs[0]
+            )
+            p_principled.inputs[
+                0
+            ].default_value = bpy.context.scene.stopmagic_past_color
+            opacity = bpy.context.scene.stopmagic_past_color[3]
+            if opacity > 0 and opacity < 1:
+                p_principled.inputs[21].default_value = bpy.context.scene.stopmagic_past_color[3]
+            else:
+                p_principled.inputs[21].default_value = 0.3
+            pmaterial.diffuse_color = bpy.context.scene.stopmagic_past_color
+            pmaterial.blend_method = 'HASHED'
+        if fmaterial is None:
+            fmaterial = bpy.data.materials.new(name="stopmagic_material_future")
+            fobject.active_material = fmaterial
+            fmaterial.use_nodes = True
+            fmat_output = fmaterial.node_tree.nodes.get("Material Output")
+            f_principled = fmaterial.node_tree.nodes.get("Principled BSDF")
+            fmaterial.node_tree.links.new(
+                fmat_output.inputs[0], f_principled.outputs[0]
+            )
+            f_principled.inputs[
+                0
+            ].default_value = bpy.context.scene.stopmagic_future_color
+            opacity = bpy.context.scene.stopmagic_future_color[3]
+            if opacity > 0 and opacity < 1:
+                f_principled.inputs[21].default_value = bpy.context.scene.stopmagic_future_color[3]
+            else:
+                f_principled.inputs[21].default_value = 0.3
+            fmaterial.diffuse_color = bpy.context.scene.stopmagic_future_color
+            fmaterial.blend_method = 'HASHED'
         #
         #   Check and collect meshes within the range specified by the user
         #
@@ -113,7 +145,11 @@ def handle_onion_skin(dummy):
                         p_key_values.pop(len(p_key_values) - 1)
                     # To make sure that, if there are no previous keyframes then the
                     # onion for the next keyframe doesn't overlay the current mesh
-                    elif len(p_key_values) == 0 and len(f_key_values) > 0 and frame not in keyframes:
+                    elif (
+                        len(p_key_values) == 0
+                        and len(f_key_values) > 0
+                        and frame not in keyframes
+                    ):
                         f_frames.pop(0)
                         f_key_values.pop(0)
                     #
@@ -164,26 +200,6 @@ def handle_onion_skin(dummy):
                             fmeshes.append(
                                 bpy.data.meshes.get(name + "_sm_" + str(fkey))
                             )
-                # for mesh in bpy.data.meshes:
-                #     i = frame - poffset
-                #     while i <= frame:
-                #         mesh_name: str = mesh.name
-                #         if mesh_name.find(name + "_sm_" + str(i)) != -1:
-                #             pmeshes.append(mesh)
-                #         i += 1
-                #     i = frame + 1
-                #     while i <= (frame + foffset):
-                #         if mesh.name == name + "_sm_" + str(i):
-                #             fmeshes.append(mesh)
-                #         i += 1
-                #     #
-                # #
-                # if len(pmeshes) > 0:
-                #     pmeshes.pop(len(pmeshes) - 1)
-                # else:
-                #     if len(fmeshes) > 0:
-                #         fmeshes.remove(fmeshes[0])
-                # #
             #
         #
         # Past
