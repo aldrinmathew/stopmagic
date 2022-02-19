@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Set
 import bpy
-from stopmagic.functions.insert_mesh_keyframe import insert_mesh_keyframe
+from stopmagic.functions import insert_mesh_keyframe, is_candidate_object
 
 
 class SkipFrameBackward(bpy.types.Operator):
@@ -13,7 +13,7 @@ class SkipFrameBackward(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return context.view_layer.objects.active is not None
+        return is_candidate_object(context)
 
     def execute(self, context: bpy.types.Context) -> Set[int] | Set[str]:
         count = 3

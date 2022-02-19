@@ -1,6 +1,7 @@
 import bpy
 
 
+@bpy.app.handlers.persistent
 def update_stopmagic(scene: bpy.types.Scene) -> None:
     for object in scene.objects:
         if object.get("sm_datablock") is None:

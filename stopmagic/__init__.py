@@ -18,6 +18,7 @@ else:
 
 from typing import List, Tuple
 import bpy
+import threading
 import re
 import os.path
 
@@ -28,7 +29,7 @@ __package__ = "stopmagic"
 bl_info = {
     "name": "Stopmagic",
     "author": "Aldrin Mathew",
-    "version": (0, 3, 2),
+    "version": (0, 3, 3),
     "blender": (2, 91, 0),
     "location": "Sidebar > Stopmagic",
     "warning": "beta",
@@ -39,6 +40,17 @@ bl_info = {
 
 
 addon_keymaps: List[Tuple[bpy.types.KeyMap, bpy.types.KeyMapItem]] = []
+
+
+@bpy.app.handlers.persistent
+def periodic_handler(_):
+    functions.frame_handler(None)
+    threading.Timer(
+        interval=180,
+        function=functions.frame_handler,
+        args=[None],
+        kwargs=None,
+    )
 
 
 def register() -> None:
@@ -56,7 +68,7 @@ def register() -> None:
     operators.keyed_frame_previous.register()
     operators.upgrade_addon.register()
     operators.contributions.register()
-    bpy.app.handlers.load_post.append(functions.frame_handler)
+    bpy.app.handlers.load_post.append(periodic_handler)
     bpy.app.handlers.frame_change_post.clear()
     bpy.app.handlers.frame_change_post.append(functions.update_stopmagic)
     bpy.app.handlers.frame_change_pre.clear()

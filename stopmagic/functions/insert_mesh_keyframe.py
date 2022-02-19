@@ -40,32 +40,35 @@ def insert_mesh_keyframe(obj: bpy.types.Object | Any) -> None:
 
 
 def insert_mesh_keyframe_ex(obj: bpy.types.Object) -> bool:
-    if obj.get("sm_id") is None:
-        obj["sm_id"] = new_object_id()
-    #
-    object_sm_id = obj["sm_id"]
-    ob_name_full = obj.name_full
-    mesh_index = get_next_mesh_index(obj)
-    mesh_name = ob_name_full + "_sm_" + str(mesh_index)
-    del_mesh = []
-    new_mesh = bpy.data.meshes.new_from_object(obj)
-    new_mesh.name = mesh_name
-    new_mesh["sm_id"] = object_sm_id
-    new_mesh["sm_datablock"] = mesh_index
-    obj.data = new_mesh
-    obj.data.use_fake_user = True
-    obj["sm_datablock"] = mesh_index
-    obj.keyframe_insert(
-        data_path='["sm_datablock"]', frame=bpy.context.scene.frame_current
-    )
-    for mesh in del_mesh:
-        mesh.use_fake_user = False
-    update_stopmagic(bpy.context.scene)
-    for mesh in del_mesh:
-        if mesh.users == 0:
-            bpy.data.meshes.remove(mesh)
-    #
-    return True
+    try:
+        if obj.get("sm_id") is None:
+            obj["sm_id"] = new_object_id()
+        #
+        object_sm_id = obj["sm_id"]
+        ob_name_full = obj.name_full
+        mesh_index = get_next_mesh_index(obj)
+        mesh_name = ob_name_full + "_sm_" + str(mesh_index)
+        del_mesh = []
+        new_mesh = bpy.data.meshes.new_from_object(obj)
+        new_mesh.name = mesh_name
+        new_mesh["sm_id"] = object_sm_id
+        new_mesh["sm_datablock"] = mesh_index
+        obj.data = new_mesh
+        obj.data.use_fake_user = True
+        obj["sm_datablock"] = mesh_index
+        obj.keyframe_insert(
+            data_path='["sm_datablock"]', frame=bpy.context.scene.frame_current
+        )
+        for mesh in del_mesh:
+            mesh.use_fake_user = False
+        update_stopmagic(bpy.context.scene)
+        for mesh in del_mesh:
+            if mesh.users == 0:
+                bpy.data.meshes.remove(mesh)
+        #
+        return True
+    except:
+        return False
 
 
 # Get the appropriate index for the mesh about to be created

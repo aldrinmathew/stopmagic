@@ -21,6 +21,7 @@ def handle_collections(past: bpy.types.Object, future: bpy.types.Object) -> None
     sm_collection.hide_select = True
 
 
+@bpy.app.handlers.persistent
 def handle_onion_skin(dummy):
     """Automatically handles Onion Skin objects and populates them with mesh data"""
     if bpy.context.view_layer.objects.active is not None:
@@ -284,14 +285,15 @@ def clear_onion_data():
         bpy.data.materials.remove(pmaterial, do_unlink=True)
     if fmaterial is not None:
         bpy.data.materials.remove(fmaterial, do_unlink=True)
-    if collection.get("objects") is not None:
-        for obj in collection.objects:
-            mesh = obj.data
-            obj.name = "removed"
-            bpy.context.scene.objects.unlink(obj)
-            bpy.data.meshes.remove(mesh, do_unlink=True)
-            bpy.data.objects.remove(obj, do_unlink=True)
-    bpy.data.collections.remove(collection)
-    bpy.ops.outliner.orphans_purge(
-        do_local_ids=True, do_linked_ids=False, do_recursive=False
-    )
+    if collection is not None:
+        if collection.get("objects") is not None:
+            for obj in collection.objects:
+                mesh = obj.data
+                obj.name = "removed"
+                bpy.context.scene.objects.unlink(obj)
+                bpy.data.meshes.remove(mesh, do_unlink=True)
+                bpy.data.objects.remove(obj, do_unlink=True)
+        bpy.data.collections.remove(collection)
+        bpy.ops.outliner.orphans_purge(
+            do_local_ids=True, do_linked_ids=False, do_recursive=False
+        )

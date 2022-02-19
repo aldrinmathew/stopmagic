@@ -44,7 +44,7 @@ class StopmagicPanel(bpy.types.Panel):
                 box.label(
                     text="v"
                     + functions.addon_version(StopmagicPanel.bl_info)
-                    + "   >>   "
+                    + "  to  "
                     + addon_remote_version()
                 )
                 box.operator(
@@ -52,6 +52,11 @@ class StopmagicPanel(bpy.types.Panel):
                 )
                 self.layout.separator()
         # SECTION :: Keyframe Mesh
+        if not functions.is_candidate_object(context):
+            if context.view_layer.objects.active is not None:
+                self.layout.column().label(text="NO ACTIVE MESH OBJECT!!", icon="ERROR")
+            else:
+                self.layout.column().label(text="NO ACTIVE OBJECT!!", icon="ERROR")
         column = self.layout.column()
         column.scale_y = 1.5
         column.operator("object.keyframe_mesh", text="Keyframe Mesh")

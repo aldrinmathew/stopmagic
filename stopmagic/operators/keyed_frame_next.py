@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Set
 import bpy
 
-from stopmagic.functions import get_object_keyframes
+from stopmagic.functions import get_object_keyframes, is_candidate_object
 
 
 class KeyedFrameNext(bpy.types.Operator):
@@ -14,14 +14,15 @@ class KeyedFrameNext(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return context.view_layer.objects.active is not None
+        return is_candidate_object(context)
 
     def execute(self, context: bpy.types.Context) -> Set[int] | Set[str]:
-        if bpy.context.view_layer.objects.active is not None:
+        if context.view_layer.objects.active is not None:
             keyframes = get_object_keyframes(context.view_layer.objects.active)
             if len(keyframes) > 0:
-                frame = bpy.context.scene.frame_current
-                keyframes = [k for k in keyframes if k > frame]
+                keyframes = [
+                    k for k in keyframes if k > bpy.context.scene.frame_current
+                ]
             if len(keyframes) > 0:
                 lowest = keyframes[0]
                 for num in keyframes:

@@ -1,5 +1,5 @@
 import bpy
-from ..functions.insert_mesh_keyframe import *
+from stopmagic.functions import insert_mesh_keyframe, is_candidate_object
 
 
 class AddMeshKeyframe(bpy.types.Operator):
@@ -11,7 +11,7 @@ class AddMeshKeyframe(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.view_layer.objects.active is not None
+        return is_candidate_object(context)
 
     def execute(self, context: bpy.types.Context):
         if bpy.context.view_layer.objects.active is not None:
