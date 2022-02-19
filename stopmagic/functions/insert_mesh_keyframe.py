@@ -50,31 +50,24 @@ def insert_mesh_keyframe_ex(obj: bpy.types.Object) -> bool:
     mesh_index = get_next_mesh_index(obj)
     mesh_name = ob_name_full + "_sm_" + str(mesh_index)
     del_mesh = []
-    proceed = False
-    if bpy.context.scene.frame_current in get_object_keyframes(obj):
-        return False
-    else:
-        proceed = True
-    #
     new_mesh = bpy.data.meshes.new_from_object(obj)
     new_mesh.name = mesh_name
     new_mesh["sm_id"] = object_sm_id
     new_mesh["sm_datablock"] = mesh_index
-    if proceed:
-        obj.data = new_mesh
-        obj.data.use_fake_user = True
-        obj["sm_datablock"] = mesh_index
-        obj.keyframe_insert(
-            data_path='["sm_datablock"]', frame=bpy.context.scene.frame_current
-        )
-        for mesh in del_mesh:
-            mesh.use_fake_user = False
-        update_stopmagic(bpy.context.scene)
-        for mesh in del_mesh:
-            if mesh.users == 0:
-                bpy.data.meshes.remove(mesh)
+    obj.data = new_mesh
+    obj.data.use_fake_user = True
+    obj["sm_datablock"] = mesh_index
+    obj.keyframe_insert(
+        data_path='["sm_datablock"]', frame=bpy.context.scene.frame_current
+    )
+    for mesh in del_mesh:
+        mesh.use_fake_user = False
+    update_stopmagic(bpy.context.scene)
+    for mesh in del_mesh:
+        if mesh.users == 0:
+            bpy.data.meshes.remove(mesh)
     #
-    return proceed
+    return True
 
 
 # Get the appropriate index for the mesh about to be created
