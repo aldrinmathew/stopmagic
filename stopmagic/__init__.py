@@ -57,7 +57,6 @@ def register() -> None:
     operators.upgrade_addon.register()
     operators.contributions.register()
     bpy.app.handlers.load_post.append(functions.frame_handler)
-    bpy.app.handlers.load_post.append(functions.handle_onion_skin)
     bpy.app.handlers.frame_change_post.clear()
     bpy.app.handlers.frame_change_post.append(functions.update_stopmagic)
     bpy.app.handlers.frame_change_pre.clear()

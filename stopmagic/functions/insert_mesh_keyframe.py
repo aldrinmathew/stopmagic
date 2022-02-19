@@ -2,43 +2,41 @@ from __future__ import annotations
 from typing import Any, List
 import bpy
 
-from .get_object_keyframes import *
 from .handle_onion_skin import *
-from .next_qualified_frame import *
 from .new_object_id import *
 from .update_stopmagic import *
 
 
 def insert_mesh_keyframe(obj: bpy.types.Object | Any) -> None:
-
-    if obj.type == "MESH":
-        # Gets the data that's not persistent when the Keyframe is added to the mesh
-        remesh_voxel_size = obj.data.remesh_voxel_size
-        remesh_voxel_adaptivity = obj.data.remesh_voxel_adaptivity
-        symmetry_x = obj.data.use_mirror_x
-        symmetry_y = obj.data.use_mirror_y
-        symmetry_z = obj.data.use_mirror_z
-
-    is_done = insert_mesh_keyframe_ex(obj)
-    if is_done:
-        fcurves = obj.animation_data.action.fcurves
-        for fcurve in fcurves:
-            if fcurve.data_path != '["sm_datablock"]':
-                continue
-            for kf in fcurve.keyframe_points:
-                kf.interpolation = "CONSTANT"
-        #
+    if obj is not None:
         if obj.type == "MESH":
-            # Restores the values of the variables that are not persistent, from before the keyframe was added.
-            obj.data.remesh_voxel_size = remesh_voxel_size
-            obj.data.remesh_voxel_adaptivity = remesh_voxel_adaptivity
-            bpy.context.object.data.use_mirror_x = symmetry_x
-            bpy.context.object.data.use_mirror_y = symmetry_y
-            bpy.context.object.data.use_mirror_z = symmetry_z
-        #
-        bpy.app.handlers.frame_change_post.clear()
-        bpy.app.handlers.frame_change_post.append(update_stopmagic)
-        handle_onion_skin(obj)
+            # Gets the data that's not persistent when the Keyframe is added to the mesh
+            remesh_voxel_size = obj.data.remesh_voxel_size
+            remesh_voxel_adaptivity = obj.data.remesh_voxel_adaptivity
+            symmetry_x = obj.data.use_mirror_x
+            symmetry_y = obj.data.use_mirror_y
+            symmetry_z = obj.data.use_mirror_z
+
+        is_done = insert_mesh_keyframe_ex(obj)
+        if is_done:
+            fcurves = obj.animation_data.action.fcurves
+            for fcurve in fcurves:
+                if fcurve.data_path != '["sm_datablock"]':
+                    continue
+                for kf in fcurve.keyframe_points:
+                    kf.interpolation = "CONSTANT"
+            #
+            if obj.type == "MESH":
+                # Restores the values of the variables that are not persistent, from before the keyframe was added.
+                obj.data.remesh_voxel_size = remesh_voxel_size
+                obj.data.remesh_voxel_adaptivity = remesh_voxel_adaptivity
+                bpy.context.object.data.use_mirror_x = symmetry_x
+                bpy.context.object.data.use_mirror_y = symmetry_y
+                bpy.context.object.data.use_mirror_z = symmetry_z
+            #
+            bpy.app.handlers.frame_change_post.clear()
+            bpy.app.handlers.frame_change_post.append(update_stopmagic)
+            handle_onion_skin(obj)
 
 
 def insert_mesh_keyframe_ex(obj: bpy.types.Object) -> bool:

@@ -14,19 +14,20 @@ class KeyedFrameNext(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context: bpy.types.Context) -> bool:
-        return True
+        return context.view_layer.objects.active is not None
 
     def execute(self, context: bpy.types.Context) -> Set[int] | Set[str]:
-        keyframes = get_object_keyframes(context.view_layer.objects.active)
-        if len(keyframes) > 0:
-            frame = bpy.context.scene.frame_current
-            keyframes = [k for k in keyframes if k > frame]
-        if len(keyframes) > 0:
-            lowest = keyframes[0]
-            for num in keyframes:
-                if num < lowest:
-                    lowest = num
-            context.scene.frame_current = lowest
+        if bpy.context.view_layer.objects.active is not None:
+            keyframes = get_object_keyframes(context.view_layer.objects.active)
+            if len(keyframes) > 0:
+                frame = bpy.context.scene.frame_current
+                keyframes = [k for k in keyframes if k > frame]
+            if len(keyframes) > 0:
+                lowest = keyframes[0]
+                for num in keyframes:
+                    if num < lowest:
+                        lowest = num
+                context.scene.frame_current = lowest
         return {"FINISHED"}
 
 

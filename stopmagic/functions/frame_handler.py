@@ -10,5 +10,6 @@ def frame_handler(dummy) -> None:
         if "sm_datablock" and "sm_id" in o:  # It's a Stopmagic scene
             bpy.app.handlers.frame_change_post.clear()
             bpy.app.handlers.frame_change_post.append(update_stopmagic)
+            bpy.app.handlers.frame_change_pre.clear()
             bpy.app.handlers.frame_change_pre.append(handle_onion_skin)
             break

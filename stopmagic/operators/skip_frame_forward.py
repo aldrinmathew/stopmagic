@@ -21,11 +21,12 @@ class SkipFrameForward(bpy.types.Operator):
             count = context.scene.stopmagic_frame_skip_count
         except Exception as _:
             count = 3
-        active = context.view_layer.objects.active
-        if active is not None:
-            bpy.context.scene.frame_current += count
-            if context.scene.stopmagic_insert_frame_after_skip:
-                insert_mesh_keyframe(active)
+        if bpy.context.view_layer.objects.active is not None:
+            active = context.view_layer.objects.active
+            if active is not None:
+                bpy.context.scene.frame_current += count
+                if context.scene.stopmagic_insert_frame_after_skip:
+                    insert_mesh_keyframe(active)
         return {"FINISHED"}
 
 

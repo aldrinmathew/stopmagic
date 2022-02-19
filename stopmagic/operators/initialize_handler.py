@@ -1,5 +1,7 @@
 import bpy
-from ..functions.update_stopmagic import *
+
+from ..functions.handle_onion_skin import handle_onion_skin
+from ..functions.update_stopmagic import update_stopmagic
 
 
 class InitializeHandler(bpy.types.Operator):
@@ -16,6 +18,8 @@ class InitializeHandler(bpy.types.Operator):
     def execute(self, context):
         bpy.app.handlers.frame_change_post.clear()
         bpy.app.handlers.frame_change_post.append(update_stopmagic)
+        bpy.app.handlers.frame_change_pre.clear()
+        bpy.app.handlers.frame_change_pre.append(handle_onion_skin)
         return {"FINISHED"}
 
 
