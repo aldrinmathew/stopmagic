@@ -170,12 +170,11 @@ def handle_onion_skin(dummy):
                                 p_key_values.pop(0)
                                 index += 1
                         if len(f_key_values) > f_count:
-                            index = f_count
-                            bound = len(f_key_values)
-                            while index < bound:
+                            index = len(f_key_values) - 1
+                            while index >= f_count:
                                 f_frames.pop(index)
                                 f_key_values.pop(index)
-                                index += 1
+                                index -= 1
                     elif bpy.context.scene.stopmagic_onion_display_type == "RANGE":
                         p_result = []
                         f_result = []
@@ -292,4 +291,6 @@ def clear_onion_data():
             bpy.data.meshes.remove(mesh, do_unlink=True)
             bpy.data.objects.remove(obj, do_unlink=True)
     bpy.data.collections.remove(collection)
-    bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=False, do_recursive=False)
+    bpy.ops.outliner.orphans_purge(
+        do_local_ids=True, do_linked_ids=False, do_recursive=False
+    )
