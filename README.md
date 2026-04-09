@@ -1,3 +1,6 @@
+## Project moved to https://codeberg.org/aldrin/stopmagic
+
+
 ![wakatime](https://wakatime.com/badge/user/af510812-c60b-4a16-bb6e-fada8313362b/project/baf381b8-0fea-4eaa-bdf2-b64380ac51f1.svg)
 
 ![](./media/cover.png)
